@@ -29,6 +29,35 @@ jobs:
       - name: Run ruff formatter check
         run: ruff format --check app/
 
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Check for vulnerabilities (pip-audit)
+        run: pip-audit --strict
+
+      - name: Check for outdated packages
+        run: |
+          echo "📦 Checking for outdated packages..."
+          pip list --outdated --format=columns || true
+          echo "ℹ️ Outdated packages are informational only (not blocking CI)"
+        continue-on-error: true
+
   build-test:
     name: Build Test
     runs-on: ubuntu-latest
@@ -46,6 +75,17 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: service-health-monitor:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'service-health-monitor:test'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
