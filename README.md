@@ -42,7 +42,8 @@ uvicorn app.main:app --reload
 |----------|--------|-------------|
 | `/` | GET | API information |
 | `/health` | GET | Application health check |
-| `/api/services` | GET | List all monitored services (demo data) |
+| `/api/services` | GET | List all monitored services with real status |
+| `/api/check` | POST | Manually trigger health check |
 | `/docs` | GET | Swagger documentation |
 
 ## 📁 Project Structure
@@ -54,6 +55,7 @@ hardware_test_runner/
 │   ├── main.py          # FastAPI application
 │   ├── models.py        # Pydantic schemas
 │   ├── config.py        # Application settings
+│   ├── checker.py       # Health check logic
 │   └── api/
 │       └── __init__.py
 ├── .env.example         # Example environment variables

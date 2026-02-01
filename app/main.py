@@ -5,8 +5,9 @@ from datetime import datetime
 from fastapi import FastAPI
 
 from app import __version__
+from app.checker import checker
 from app.config import settings
-from app.models import AppHealth, AppInfo, HealthResult, ServicesResponse
+from app.models import AppHealth, AppInfo, ServicesResponse
 
 app = FastAPI(
     title=settings.app_name,
@@ -37,26 +38,29 @@ async def health_check() -> AppHealth:
 
 @app.get("/api/services", response_model=ServicesResponse)
 async def get_services() -> ServicesResponse:
-    """Get status of all monitored services (demo with fake data)."""
-    # Tymczasowe dane demonstracyjne - będą zastąpione prawdziwymi danymi
-    demo_results = [
-        HealthResult(
-            service_name=name,
-            url=url,
-            is_healthy=True,
-            status_code=200,
-            response_time_ms=100.0,
-            error_message=None,
-            checked_at=datetime.now(),
-        )
-        for name, url in settings.services.items()
-    ]
+    """Get status of all monitored services.
 
-    healthy_count = sum(1 for r in demo_results if r.is_healthy)
+    Wykonuje prawdziwe requesty HTTP do wszystkich skonfigurowanych serwisów
+    i zwraca ich aktualny status.
+    """
+    # Prawdziwe sprawdzanie serwisów!
+    results = await checker.check_all()
+
+    healthy_count = sum(1 for r in results if r.is_healthy)
 
     return ServicesResponse(
-        services=demo_results,
-        total=len(demo_results),
+        services=results,
+        total=len(results),
         healthy=healthy_count,
-        unhealthy=len(demo_results) - healthy_count,
+        unhealthy=len(results) - healthy_count,
     )
+
+
+@app.post("/api/check", response_model=ServicesResponse)
+async def trigger_check() -> ServicesResponse:
+    """Manually trigger health check for all services.
+
+    Używaj tego endpointu gdy chcesz wymusić sprawdzenie "teraz"
+    zamiast czekać na automatyczny cykl.
+    """
+    return await get_services()
