@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/michal1298/service-health-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/michal1298/service-health-monitor/actions/workflows/ci.yml)
 [![Release](https://github.com/michal1298/service-health-monitor/actions/workflows/release.yml/badge.svg)](https://github.com/michal1298/service-health-monitor/actions/workflows/release.yml)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/michal1298/service-health-monitor)](https://github.com/michal1298/service-health-monitor/releases/latest)
 
 Simple, lightweight service health monitoring tool built with Python and FastAPI.
 
@@ -52,7 +53,7 @@ uvicorn app.main:app --reload
 ## 📁 Project Structure
 
 ```
-hardware_test_runner/
+service-health-monitor/
 ├── app/
 │   ├── __init__.py      # Package with version
 │   ├── main.py          # FastAPI application
@@ -61,8 +62,7 @@ hardware_test_runner/
 │   └── checker.py       # Health check logic
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml       # Lint on every push/PR
-│       ├── build-dev.yml    # Build dev image (develop branch)
+│       ├── ci.yml       # Lint, security & build dev image
 │       └── release.yml  # Build prod image (master + tags)
 ├── Dockerfile           # Multi-stage Docker build
 ├── docker-compose.yml   # Docker Compose configuration
@@ -101,7 +101,7 @@ cp .env.example .env
 ### Build and run with Docker Compose
 
 ```bash
-# Start everything (PostgreSQL + App)
+# Start application
 docker-compose up -d
 
 # Check logs
@@ -116,5 +116,21 @@ docker-compose down
 ```bash
 docker build -t service-health-monitor .
 docker run -p 8000:8000 service-health-monitor
+```
+
+## 📦 Releases
+
+Docker images are automatically built and pushed to GitHub Container Registry:
+
+| Tag | Description |
+|-----|-------------|
+| `ghcr.io/michal1298/service-health-monitor:dev` | Latest develop branch |
+| `ghcr.io/michal1298/service-health-monitor:latest` | Latest release |
+| `ghcr.io/michal1298/service-health-monitor:X.Y.Z` | Specific version |
+
+```bash
+# Pull and run latest release
+docker pull ghcr.io/michal1298/service-health-monitor:latest
+docker run -p 8000:8000 ghcr.io/michal1298/service-health-monitor:latest
 ```
 
