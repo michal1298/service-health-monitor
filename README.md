@@ -1,13 +1,15 @@
 # 🏥 Service Health Monitor
 
+[![CI](https://github.com/michal1298/service-health-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/michal1298/service-health-monitor/actions/workflows/ci.yml)
+[![Release](https://github.com/michal1298/service-health-monitor/actions/workflows/release.yml/badge.svg)](https://github.com/michal1298/service-health-monitor/actions/workflows/release.yml)
+
 Simple, lightweight service health monitoring tool built with Python and FastAPI.
 
 ## ✨ Features
 
 - ⚡ **Async health checks** - Concurrent monitoring using aiohttp
-- 🐘 **PostgreSQL storage** - Reliable data persistence
 - 📊 **Prometheus metrics** - Ready for Grafana dashboards
-- 🐳 **Docker ready** - Multi-stage Alpine image
+- 🐳 **Docker ready** - Multi-stage Alpine image (~90MB)
 - 🔄 **CI/CD** - GitHub Actions for testing and releases
 
 ## 🚀 Quick Start
@@ -56,9 +58,12 @@ hardware_test_runner/
 │   ├── main.py          # FastAPI application
 │   ├── models.py        # Pydantic schemas
 │   ├── config.py        # Application settings
-│   ├── checker.py       # Health check logic
-│   └── api/
-│       └── __init__.py
+│   └── checker.py       # Health check logic
+├── .github/
+│   └── workflows/
+│       ├── ci.yml       # Lint on every push/PR
+│       ├── build-dev.yml    # Build dev image (develop branch)
+│       └── release.yml  # Build prod image (master + tags)
 ├── Dockerfile           # Multi-stage Docker build
 ├── docker-compose.yml   # Docker Compose configuration
 ├── .dockerignore
