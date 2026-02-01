@@ -101,10 +101,7 @@ class HealthChecker:
             return []
 
         # Tworzymy listę tasków - każdy sprawdza jeden serwis
-        tasks = [
-            self.check_service(name, url)
-            for name, url in self.services.items()
-        ]
+        tasks = [self.check_service(name, url) for name, url in self.services.items()]
 
         # Wykonujemy wszystkie taski równolegle
         results = await asyncio.gather(*tasks)

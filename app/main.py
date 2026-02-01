@@ -95,11 +95,13 @@ async def prometheus_metrics() -> str:
         status = 1 if r.is_healthy else 0
         lines.append(f'service_up{{service="{r.service_name}"}} {status}')
 
-    lines.extend([
-        "",
-        "# HELP service_response_time_ms Service response time in milliseconds",
-        "# TYPE service_response_time_ms gauge",
-    ])
+    lines.extend(
+        [
+            "",
+            "# HELP service_response_time_ms Service response time in milliseconds",
+            "# TYPE service_response_time_ms gauge",
+        ]
+    )
 
     for r in results:
         lines.append(
