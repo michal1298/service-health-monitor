@@ -53,16 +53,37 @@ hardware_test_runner/
 │   ├── __init__.py      # Package with version
 │   ├── main.py          # FastAPI application
 │   ├── models.py        # Pydantic schemas
+│   ├── config.py        # Application settings
 │   └── api/
 │       └── __init__.py
+├── .env.example         # Example environment variables
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
+## ⚙️ Configuration
+
+Copy `.env.example` to `.env` and adjust values:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `POSTGRES_HOST` | `localhost` | PostgreSQL host |
+| `POSTGRES_PORT` | `5432` | PostgreSQL port |
+| `POSTGRES_USER` | `monitor` | Database user |
+| `POSTGRES_PASSWORD` | `monitor` | Database password |
+| `POSTGRES_DB` | `health_monitor` | Database name |
+| `SERVICES_CONFIG` | `github=https://api.github.com` | Services to monitor |
+| `CHECK_INTERVAL_SECONDS` | `60` | Health check interval |
+
 ## 🛠️ Tech Stack
 
 - **Python 3.13**
 - **FastAPI** - Modern async web framework
+- **Pydantic** - Data validation and settings
 - **Uvicorn** - ASGI server
 

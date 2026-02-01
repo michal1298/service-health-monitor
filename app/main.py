@@ -5,10 +5,11 @@ from datetime import datetime
 from fastapi import FastAPI
 
 from app import __version__
+from app.config import settings
 from app.models import AppHealth, AppInfo, HealthResult, ServicesResponse
 
 app = FastAPI(
-    title="Service Health Monitor",
+    title=settings.app_name,
     description="Simple service health monitoring tool for DevOps",
     version=__version__,
 )
@@ -18,7 +19,7 @@ app = FastAPI(
 async def root() -> AppInfo:
     """Root endpoint with basic API information."""
     return AppInfo(
-        name="Service Health Monitor",
+        name=settings.app_name,
         version=__version__,
         docs="/docs",
     )
@@ -37,31 +38,25 @@ async def health_check() -> AppHealth:
 @app.get("/api/services", response_model=ServicesResponse)
 async def get_services() -> ServicesResponse:
     """Get status of all monitored services (demo with fake data)."""
-    # Tymczasowe dane demonstracyjne
+    # Tymczasowe dane demonstracyjne - będą zastąpione prawdziwymi danymi
     demo_results = [
         HealthResult(
-            service_name="github",
-            url="https://api.github.com",
+            service_name=name,
+            url=url,
             is_healthy=True,
             status_code=200,
-            response_time_ms=145.32,
+            response_time_ms=100.0,
             error_message=None,
             checked_at=datetime.now(),
-        ),
-        HealthResult(
-            service_name="google",
-            url="https://www.google.com",
-            is_healthy=True,
-            status_code=200,
-            response_time_ms=89.5,
-            error_message=None,
-            checked_at=datetime.now(),
-        ),
+        )
+        for name, url in settings.services.items()
     ]
+
+    healthy_count = sum(1 for r in demo_results if r.is_healthy)
 
     return ServicesResponse(
         services=demo_results,
-        total=2,
-        healthy=2,
-        unhealthy=0,
+        total=len(demo_results),
+        healthy=healthy_count,
+        unhealthy=len(demo_results) - healthy_count,
     )
