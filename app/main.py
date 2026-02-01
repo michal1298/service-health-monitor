@@ -41,10 +41,10 @@ async def health_check() -> AppHealth:
 async def get_services() -> ServicesResponse:
     """Get status of all monitored services.
 
-    Wykonuje prawdziwe requesty HTTP do wszystkich skonfigurowanych serwisów
-    i zwraca ich aktualny status.
+    Performs real HTTP requests to all configured services
+    and returns their current status.
     """
-    # Prawdziwe sprawdzanie serwisów!
+    # Real service checking!
     results = await checker.check_all()
 
     healthy_count = sum(1 for r in results if r.is_healthy)
@@ -61,8 +61,8 @@ async def get_services() -> ServicesResponse:
 async def trigger_check() -> ServicesResponse:
     """Manually trigger health check for all services.
 
-    Używaj tego endpointu gdy chcesz wymusić sprawdzenie "teraz"
-    zamiast czekać na automatyczny cykl.
+    Use this endpoint when you want to force a check "now"
+    instead of waiting for the automatic cycle.
     """
     return await get_services()
 
@@ -71,21 +71,23 @@ async def trigger_check() -> ServicesResponse:
 async def prometheus_metrics() -> str:
     """Prometheus-compatible metrics endpoint.
 
-    Zwraca metryki w formacie tekstowym Prometheus:
-    - service_up{service="name"} 1|0 - czy serwis działa
-    - service_response_time_ms{service="name"} X.XX - czas odpowiedzi
+    Returns metrics in Prometheus text format:
+    - `service_up{service="name"} 1|0` - whether the service is running
+    - `service_response_time_ms{service="name"} X.XX` - response time
 
-    Przykład użycia w prometheus.yml:
-        scrape_configs:
-          - job_name: 'health-monitor'
-            static_configs:
-              - targets: ['localhost:8000']
-            metrics_path: '/metrics'
+    Example usage in prometheus.yml:
+    ```yaml
+    scrape_configs:
+      - job_name: 'health-monitor'
+        static_configs:
+          - targets: ['localhost:8000']
+        metrics_path: '/metrics'
+    ```
     """
-    # Pobierz aktualne wyniki sprawdzania
+    # Get current check results
     results = await checker.check_all()
 
-    # Buduj odpowiedź w formacie Prometheus
+    # Build response in Prometheus format
     lines = [
         "# HELP service_up Service health status (1=healthy, 0=unhealthy)",
         "# TYPE service_up gauge",
