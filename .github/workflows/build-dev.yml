@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,7 +43,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=dev
-            type=sha,prefix=dev-
+            type=sha,prefix=dev-,value=${{ github.event.workflow_run.head_sha }}
 
       - name: Build and push Dev image
         uses: docker/build-push-action@v6
@@ -51,6 +53,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            APP_VERSION=dev-${{ github.sha }}
+            APP_VERSION=dev-${{ github.event.workflow_run.head_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
