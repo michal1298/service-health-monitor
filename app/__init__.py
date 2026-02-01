@@ -1,3 +1,5 @@
 """Hardware Test Runner - Service Health Monitor application."""
 
-__version__ = "0.1.0"
+import os
+
+__version__ = os.getenv("APP_VERSION", "dev")

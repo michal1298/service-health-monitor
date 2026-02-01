@@ -27,6 +27,9 @@ WORKDIR /app
 COPY --from=builder /root/.local /home/appuser/.local
 ENV PATH=/home/appuser/.local/bin:$PATH
 
+# Build argument for version (passed from CI)
+ARG APP_VERSION=dev
+
 # Copy application code
 COPY --chown=appuser:appgroup app/ ./app/
 
@@ -35,7 +38,8 @@ USER appuser
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    APP_VERSION=${APP_VERSION}
 
 EXPOSE 8000
 
