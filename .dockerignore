@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+env
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+# IDE
+.vscode
+
+# Tests
+tests
+htmlcov
+.coverage
+coverage.xml
+
+# Docs
+*.md
+!README.md
+
+# Local files
+.env
+.env.local
+*.db
+*.sqlite
+
+# Dev files
+requirements-dev.txt

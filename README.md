@@ -59,6 +59,9 @@ hardware_test_runner/
 │   ├── checker.py       # Health check logic
 │   └── api/
 │       └── __init__.py
+├── Dockerfile           # Multi-stage Docker build
+├── docker-compose.yml   # Docker Compose configuration
+├── .dockerignore
 ├── .env.example         # Example environment variables
 ├── .gitignore
 ├── README.md
@@ -75,18 +78,38 @@ cp .env.example .env
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `POSTGRES_HOST` | `localhost` | PostgreSQL host |
-| `POSTGRES_PORT` | `5432` | PostgreSQL port |
-| `POSTGRES_USER` | `monitor` | Database user |
-| `POSTGRES_PASSWORD` | `monitor` | Database password |
-| `POSTGRES_DB` | `health_monitor` | Database name |
 | `SERVICES_CONFIG` | `github=https://api.github.com` | Services to monitor |
 | `CHECK_INTERVAL_SECONDS` | `60` | Health check interval |
+| `REQUEST_TIMEOUT_SECONDS` | `10` | HTTP request timeout |
 
 ## 🛠️ Tech Stack
 
 - **Python 3.13**
 - **FastAPI** - Modern async web framework
 - **Pydantic** - Data validation and settings
+- **aiohttp** - Async HTTP client
+- **Docker** - Multi-stage Alpine build
 - **Uvicorn** - ASGI server
+
+## 🐳 Docker
+
+### Build and run with Docker Compose
+
+```bash
+# Start everything (PostgreSQL + App)
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f monitor
+
+# Stop
+docker-compose down
+```
+
+### Build image only
+
+```bash
+docker build -t service-health-monitor .
+docker run -p 8000:8000 service-health-monitor
+```
 

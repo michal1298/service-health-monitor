@@ -1,0 +1,9 @@
+services:
+  monitor:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - CHECK_INTERVAL_SECONDS=30
+      - SERVICES_CONFIG=github=https://api.github.com,google=https://www.google.com
+    restart: unless-stopped
