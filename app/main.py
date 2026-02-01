@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 
 from app import __version__
 from app.checker import checker
@@ -64,3 +65,45 @@ async def trigger_check() -> ServicesResponse:
     zamiast czekać na automatyczny cykl.
     """
     return await get_services()
+
+
+@app.get("/metrics", response_class=PlainTextResponse)
+async def prometheus_metrics() -> str:
+    """Prometheus-compatible metrics endpoint.
+
+    Zwraca metryki w formacie tekstowym Prometheus:
+    - service_up{service="name"} 1|0 - czy serwis działa
+    - service_response_time_ms{service="name"} X.XX - czas odpowiedzi
+
+    Przykład użycia w prometheus.yml:
+        scrape_configs:
+          - job_name: 'health-monitor'
+            static_configs:
+              - targets: ['localhost:8000']
+            metrics_path: '/metrics'
+    """
+    # Pobierz aktualne wyniki sprawdzania
+    results = await checker.check_all()
+
+    # Buduj odpowiedź w formacie Prometheus
+    lines = [
+        "# HELP service_up Service health status (1=healthy, 0=unhealthy)",
+        "# TYPE service_up gauge",
+    ]
+
+    for r in results:
+        status = 1 if r.is_healthy else 0
+        lines.append(f'service_up{{service="{r.service_name}"}} {status}')
+
+    lines.extend([
+        "",
+        "# HELP service_response_time_ms Service response time in milliseconds",
+        "# TYPE service_response_time_ms gauge",
+    ])
+
+    for r in results:
+        lines.append(
+            f'service_response_time_ms{{service="{r.service_name}"}} {r.response_time_ms}'
+        )
+
+    return "\n".join(lines)

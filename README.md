@@ -44,6 +44,7 @@ uvicorn app.main:app --reload
 | `/health` | GET | Application health check |
 | `/api/services` | GET | List all monitored services with real status |
 | `/api/check` | POST | Manually trigger health check |
+| `/metrics` | GET | Prometheus-compatible metrics |
 | `/docs` | GET | Swagger documentation |
 
 ## 📁 Project Structure
