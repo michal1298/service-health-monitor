@@ -9,6 +9,8 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
+RUN pip install --no-cache-dir --upgrade pip>=26.0
+
 # Copy requirements and install to user directory
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
