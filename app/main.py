@@ -1,6 +1,8 @@
 """FastAPI application entry point."""
 
 from datetime import datetime
+import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
@@ -10,10 +12,28 @@ from app.checker import checker
 from app.config import settings
 from app.models import AppHealth, AppInfo, ServicesResponse
 
+
+# Background task dla cyklicznych checków
+async def periodic_health_check():
+    """Automatyczne sprawdzanie serwisów co X sekund."""
+    while True:
+        await asyncio.sleep(settings.check_interval_seconds)
+        await checker.check_all()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle manager - uruchamia background task."""
+    task = asyncio.create_task(periodic_health_check())
+    yield
+    task.cancel()
+
+
 app = FastAPI(
     title=settings.app_name,
     description="Simple service health monitoring tool for DevOps",
     version=__version__,
+    lifespan=lifespan,
 )
 
 

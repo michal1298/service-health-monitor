@@ -1,5 +1,6 @@
 """Application configuration using Pydantic Settings."""
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -28,6 +29,23 @@ class Settings(BaseSettings):
                 name, url = item.split("=", 1)
                 result[name.strip()] = url.strip()
         return result
+
+    @field_validator("services_config")
+    @classmethod
+    def validate_services_format(cls, v: str) -> str:
+        """Walidacja formatu services_config."""
+        if not v.strip():
+            raise ValueError("services_config nie może być puste")
+
+        for item in v.split(","):
+            if "=" not in item:
+                raise ValueError(f"Invalid format in services_config: '{item}'. Expected 'name=url'")
+
+            name, url = item.split("=", 1)
+            if not name.strip() or not url.strip():
+                raise ValueError(f"Empty name or URL in: '{item}'")
+
+        return v
 
     class Config:
         env_file = ".env"

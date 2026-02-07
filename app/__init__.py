@@ -1,4 +1,4 @@
-"""Hardware Test Runner - Service Health Monitor application."""
+"""Service Health Monitor - FastAPI microservice for monitoring external HTTP services."""
 
 import os
 

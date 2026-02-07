@@ -10,7 +10,7 @@ Główne funkcje:
 """
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import aiohttp
 
@@ -32,6 +32,9 @@ class HealthChecker:
         """Initialize checker with settings from config."""
         self.services = settings.services
         self.timeout = aiohttp.ClientTimeout(total=settings.request_timeout_seconds)
+        self._cache: list[HealthResult] = []
+        self._cache_time: datetime | None = None
+        self._cache_ttl = timedelta(seconds=5)  # Cache na 5 sekund
 
     async def check_service(self, name: str, url: str) -> HealthResult:
         """Check health of a single service.
@@ -88,15 +91,17 @@ class HealthChecker:
                 checked_at=datetime.now(),
             )
 
-    async def check_all(self) -> list[HealthResult]:
-        """Check all configured services concurrently.
+    async def check_all(self, force: bool = False) -> list[HealthResult]:
+        """Check all configured services with optional caching.
 
-        Używa asyncio.gather() do równoległego sprawdzania wszystkich serwisów.
-        To znacznie szybsze niż sprawdzanie sekwencyjne!
-
-        Returns:
-            Lista HealthResult dla każdego serwisu
+        Args:
+            force: Wymusza sprawdzenie, ignorując cache
         """
+        # Jeśli jest cache i nie jest przeterminowany, zwróć z cache
+        if not force and self._cache and self._cache_time:
+            if datetime.now() - self._cache_time < self._cache_ttl:
+                return self._cache
+
         if not self.services:
             return []
 
@@ -106,7 +111,11 @@ class HealthChecker:
         # Wykonujemy wszystkie taski równolegle
         results = await asyncio.gather(*tasks)
 
-        return list(results)
+        # Zaktualizuj cache
+        self._cache = list(results)
+        self._cache_time = datetime.now()
+
+        return self._cache
 
 
 # Global checker instance - używany przez endpointy
