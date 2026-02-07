@@ -39,7 +39,9 @@ class Settings(BaseSettings):
 
         for item in v.split(","):
             if "=" not in item:
-                raise ValueError(f"Invalid format in services_config: '{item}'. Expected 'name=url'")
+                raise ValueError(
+                    f"Invalid format in services_config: '{item}'. Expected 'name=url'"
+                )
 
             name, url = item.split("=", 1)
             if not name.strip() or not url.strip():
