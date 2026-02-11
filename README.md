@@ -14,9 +14,29 @@ Simple, lightweight service health monitoring tool built with Python and FastAPI
 - 🔄 **CI/CD** - GitHub Actions for testing and releases
 
 ## 🚀 Quick Start
+### Option 1: `UV`
 
-### Local Development
+[UV](https://github.com/astral-sh/uv) is a ultra-fast Python package manager written in Rust (faster than pip).
 
+```bash
+# Install UV (if not installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone repository
+git clone git@github.com:michal1298/service-health-monitor.git
+cd service-health-monitor
+
+# Create venv and install dependencies in one command
+uv sync
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run application
+uvicorn app.main:app --reload
+```
+
+### Option 2: Traditional `pip`
 ```bash
 # Clone repository
 git clone git@github.com:michal1298/service-health-monitor.git
@@ -66,6 +86,9 @@ service-health-monitor/
 │       └── release.yml  # Build prod image (master + tags)
 ├── Dockerfile           # Multi-stage Docker build
 ├── docker-compose.yml   # Docker Compose configuration
+├── pyproject.toml       # Project metadata & dependencies (UV/pip)
+├── requirements.txt     # Locked dependencies (pip fallback)
+├── uv.lock              # UV lock file (deterministic builds)
 ├── .dockerignore
 ├── .env.example         # Example environment variables
 ├── .gitignore
@@ -95,6 +118,7 @@ cp .env.example .env
 - **aiohttp** - Async HTTP client
 - **Docker** - Multi-stage Alpine build
 - **Uvicorn** - ASGI server
+- **UV** (optional) - Ultra-fast package manager
 
 ## 🐳 Docker
 
@@ -134,3 +158,29 @@ docker pull ghcr.io/michal1298/service-health-monitor:latest
 docker run -p 8000:8000 ghcr.io/michal1298/service-health-monitor:latest
 ```
 
+## 🔧 Development
+### Adding dependencies
+
+**With `UV`:**
+```bash
+uv add fastapi  # Adds to pyproject.toml and updates uv.lock
+uv sync         # Installs all dependencies
+```
+
+**With `pip`:**
+```bash
+pip install fastapi
+pip freeze > requirements.txt  # Update requirements.txt manually
+```
+
+### Linting and formatting
+
+```bash
+# With `UV`
+uv run ruff check app/
+uv run ruff format app/
+
+# With `pip` (after `pip` install `ruff`)
+ruff check app/
+ruff format app/
+```
