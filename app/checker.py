@@ -65,7 +65,7 @@ class HealthChecker:
                         checked_at=datetime.now(),
                     )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             # Serwis nie odpowiedział w czasie
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
             return HealthResult(

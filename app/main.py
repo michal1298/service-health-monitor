@@ -1,8 +1,8 @@
 """FastAPI application entry point."""
 
-from datetime import datetime
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
@@ -127,7 +127,8 @@ async def prometheus_metrics() -> str:
 
     for r in results:
         lines.append(
-            f'service_response_time_ms{{service="{r.service_name}"}} {r.response_time_ms}'
+            f'service_response_time_ms{{service="{r.service_name}"}} '
+            f"{r.response_time_ms}"
         )
 
     return "\n".join(lines)

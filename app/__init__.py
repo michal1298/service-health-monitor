@@ -1,4 +1,7 @@
-"""Service Health Monitor - FastAPI microservice for monitoring external HTTP services."""
+"""Service Health Monitor.
+
+FastAPI microservice for monitoring external HTTP services.
+"""
 
 import os
 
