@@ -93,7 +93,6 @@ service-health-monitor/
 ├── .env.example         # Example environment variables
 ├── .gitignore
 ├── README.md
-└── requirements.txt
 ```
 
 ## ⚙️ Configuration
