@@ -1,5 +1,7 @@
 """FastAPI application entry point."""
 
+import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI
@@ -10,10 +12,32 @@ from app.checker import checker
 from app.config import settings
 from app.models import AppHealth, AppInfo, ServicesResponse
 
+
+# Background task for periodic checks
+async def periodic_health_check():
+    """Automatically check services every X seconds."""
+    while True:
+        await asyncio.sleep(settings.check_interval_seconds)
+        await checker.check_all()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle manager - starts background task."""
+    task = asyncio.create_task(periodic_health_check())
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
 app = FastAPI(
     title=settings.app_name,
     description="Simple service health monitoring tool for DevOps",
     version=__version__,
+    lifespan=lifespan,
 )
 
 
@@ -107,7 +131,8 @@ async def prometheus_metrics() -> str:
 
     for r in results:
         lines.append(
-            f'service_response_time_ms{{service="{r.service_name}"}} {r.response_time_ms}'
+            f'service_response_time_ms{{service="{r.service_name}"}} '
+            f"{r.response_time_ms}"
         )
 
     return "\n".join(lines)
