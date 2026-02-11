@@ -12,6 +12,15 @@
 
 ## Development Workflow
 ### Local Development
+
+**With UV (Recommended):**
+```bash
+uv sync                          # Create venv + install deps from pyproject.toml
+source .venv/bin/activate        # Activate venv
+uvicorn app.main:app --reload    # http://localhost:8000/docs
+```
+
+**With pip (Alternative):**
 ```bash
 python3.13 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -26,8 +35,24 @@ docker-compose logs -f monitor
 
 ### Lint & Format (STRICT)
 ```bash
-ruff check app/      # Linting - blocks CI
-ruff format app/     # Formatting - must pass before commit
+# With UV
+uv run ruff check app/      # Linting - blocks CI
+uv run ruff format app/     # Formatting - must pass before commit
+
+# With pip
+ruff check app/
+ruff format app/
+```
+
+### Adding Dependencies
+```bash
+# With UV - automatically updates pyproject.toml and uv.lock
+uv add package_name
+uv sync
+
+# With pip - manually update requirements.txt
+pip install package_name
+pip freeze > requirements.txt
 ```
 
 ## Project-Specific Conventions
@@ -36,6 +61,15 @@ ruff format app/     # Formatting - must pass before commit
 - **Polish comments** in code, **English** in docstrings and public-facing text
 - Polish explanations like `"Ten moduł odpowiada za..."` in implementation files are intentional
 - Use `ruff` for linting/formatting (no black, no flake8)
+
+### Package Management
+- **Primary source**: `pyproject.toml` - defines all dependencies and project metadata
+- **UV lock file**: `uv.lock` - deterministic builds (commit to repo)
+- **Fallback**: `requirements.txt` - for users who prefer pip (keep in sync with pyproject.toml)
+
+**When adding dependencies, update both:**
+1. `pyproject.toml` - add to `dependencies` array
+2. `requirements.txt` - run `pip freeze > requirements.txt` or `uv pip compile pyproject.toml -o requirements.txt`
 
 ### Configuration Pattern
 Services configured via **CSV-style env var**: `name=url,name2=url2`
@@ -59,6 +93,7 @@ def services(self) -> dict[str, str]:
   - API endpoints, configuration options, or deployment methods
   - Docker image structure or environment variables
   - CI/CD pipeline behavior or release process
+  - Dependency management (UV vs pip instructions)
 - Keep README.md synchronized with actual implementation, not aspirational features
 
 ## Docker & CI/CD
@@ -69,6 +104,8 @@ In CI workflow:
 - Build AMD64 → load → Trivy scan (only AMD64 scannable on GitHub Actions)
 - Build ARM64 → test compile only (can't execute on x86 runners)
 - Production release builds both platforms simultaneously
+
+**Docker uses pip + requirements.txt** (not UV) for broader compatibility and smaller images.
 
 ### Security Practices
 1. **pip upgrade** - Always pin `pip>=26.0` in Dockerfile to avoid CVEs
@@ -109,8 +146,17 @@ Read at runtime from `os.getenv("APP_VERSION", "dev")` in `app/__init__.py`.
 - Increase in `.env` if monitoring slow endpoints
 - Check `aiohttp.ClientTimeout(total=...)` in `checker.py`
 
+### UV vs pip compatibility
+- **UV reads pyproject.toml** - primary dependency source
+- **pip reads requirements.txt** - fallback for traditional workflows
+- Keep both in sync: `uv pip compile pyproject.toml -o requirements.txt`
+- Docker always uses pip for smaller images and broader compatibility
+
 ## Key Files Reference
-- **Dockerfile** - Multi-stage Alpine, security hardened, pin pip version at top of builder stage
+- **pyproject.toml** - Project metadata, dependencies (UV primary source)
+- **requirements.txt** - Locked dependencies (pip fallback, Docker)
+- **uv.lock** - UV lock file (commit for reproducible builds)
+- **Dockerfile** - Multi-stage Alpine, security hardened, uses pip
 - **.env.example** - All environment variables with defaults
 - **docker-compose.yml** - Local dev setup, pass-through env vars
 - **.github/workflows/ci.yml** - 4 jobs: lint, security, build-test (both platforms), build-dev
