@@ -1,12 +1,12 @@
 """Service health checker with async HTTP requests.
 
-Ten moduł odpowiada za rzeczywiste sprawdzanie dostępności serwisów HTTP.
-Używa aiohttp do wykonywania asynchronicznych requestów, co pozwala
-na równoległe sprawdzanie wielu serwisów bez blokowania.
+This module handles actual HTTP service availability checking.
+Uses aiohttp to perform asynchronous requests, which allows
+parallel checking of multiple services without blocking.
 
-Główne funkcje:
-- check_service() - sprawdza pojedynczy serwis
-- check_all() - sprawdza wszystkie serwisy z konfiguracji równolegle
+Main functions:
+- check_service() - checks a single service
+- check_all() - checks all configured services in parallel
 """
 
 import asyncio
@@ -21,7 +21,7 @@ from app.models import HealthResult
 class HealthChecker:
     """Async health checker for multiple services.
 
-    Przykład użycia:
+    Example usage:
         checker = HealthChecker()
         results = await checker.check_all()
         for result in results:
@@ -34,31 +34,31 @@ class HealthChecker:
         self.timeout = aiohttp.ClientTimeout(total=settings.request_timeout_seconds)
         self._cache: list[HealthResult] = []
         self._cache_time: datetime | None = None
-        self._cache_ttl = timedelta(seconds=5)  # Cache na 5 sekund
+        self._cache_ttl = timedelta(seconds=5)  # Cache for 5 seconds
 
     async def check_service(self, name: str, url: str) -> HealthResult:
         """Check health of a single service.
 
         Args:
-            name: Nazwa serwisu (np. "github")
-            url: URL do sprawdzenia (np. "https://api.github.com")
+            name: Service name (e.g., "github")
+            url: URL to check (e.g., "https://api.github.com")
 
         Returns:
-            HealthResult z informacjami o statusie serwisu
+            HealthResult with service status information
         """
         start_time = datetime.now()
 
         try:
-            # Tworzymy sesję HTTP i wykonujemy request
+            # Create HTTP session and execute request
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 async with session.get(url) as response:
-                    # Obliczamy czas odpowiedzi w milisekundach
+                    # Calculate response time in milliseconds
                     elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
                     return HealthResult(
                         service_name=name,
                         url=url,
-                        is_healthy=response.status < 400,  # 2xx i 3xx = OK
+                        is_healthy=response.status < 400,  # 2xx and 3xx = OK
                         status_code=response.status,
                         response_time_ms=round(elapsed_ms, 2),
                         error_message=None,
@@ -66,7 +66,7 @@ class HealthChecker:
                     )
 
         except TimeoutError:
-            # Serwis nie odpowiedział w czasie
+            # Service did not respond in time
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
             return HealthResult(
                 service_name=name,
@@ -79,7 +79,7 @@ class HealthChecker:
             )
 
         except aiohttp.ClientError as e:
-            # Błąd połączenia (DNS, refused, etc.)
+            # Connection error (DNS, refused, etc.)
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
             return HealthResult(
                 service_name=name,
@@ -95,9 +95,9 @@ class HealthChecker:
         """Check all configured services with optional caching.
 
         Args:
-            force: Wymusza sprawdzenie, ignorując cache
+            force: Forces check, ignoring cache
         """
-        # Jeśli jest cache i nie jest przeterminowany, zwróć z cache
+        # If cache exists and is not expired, return from cache
         if not force and self._cache and self._cache_time:
             if datetime.now() - self._cache_time < self._cache_ttl:
                 return self._cache
@@ -105,18 +105,18 @@ class HealthChecker:
         if not self.services:
             return []
 
-        # Tworzymy listę tasków - każdy sprawdza jeden serwis
+        # Create list of tasks - each checks one service
         tasks = [self.check_service(name, url) for name, url in self.services.items()]
 
-        # Wykonujemy wszystkie taski równolegle
+        # Execute all tasks in parallel
         results = await asyncio.gather(*tasks)
 
-        # Zaktualizuj cache
+        # Update cache
         self._cache = list(results)
         self._cache_time = datetime.now()
 
         return self._cache
 
 
-# Global checker instance - używany przez endpointy
+# Global checker instance - used by endpoints
 checker = HealthChecker()

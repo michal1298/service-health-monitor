@@ -1,6 +1,6 @@
 [project]
 name = "service-health-monitor"
-version = "0.1.0"
+version = "1.2.0"
 description = "Simple service health monitoring tool for DevOps"
 readme = "README.md"
 requires-python = ">=3.13"

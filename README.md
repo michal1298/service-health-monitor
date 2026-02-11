@@ -16,7 +16,7 @@ Simple, lightweight service health monitoring tool built with Python and FastAPI
 ## 🚀 Quick Start
 ### Option 1: `UV`
 
-[UV](https://github.com/astral-sh/uv) is a ultra-fast Python package manager written in Rust (faster than pip).
+[UV](https://github.com/astral-sh/uv) is an ultra-fast Python package manager written in Rust (faster than pip).
 
 ```bash
 # Install UV (if not installed)

@@ -33,9 +33,10 @@ class Settings(BaseSettings):
     @field_validator("services_config")
     @classmethod
     def validate_services_format(cls, v: str) -> str:
-        """Walidacja formatu services_config."""
-        if not v.strip():
-            raise ValueError("services_config nie może być puste")
+        """Validate services_config format."""
+        # Allow empty/blank configuration and let `services` return an empty dict.
+        if v is None or not str(v).strip():
+            return ""
 
         for item in v.split(","):
             if "=" not in item:

@@ -13,9 +13,9 @@ from app.config import settings
 from app.models import AppHealth, AppInfo, ServicesResponse
 
 
-# Background task dla cyklicznych checków
+# Background task for periodic checks
 async def periodic_health_check():
-    """Automatyczne sprawdzanie serwisów co X sekund."""
+    """Automatically check services every X seconds."""
     while True:
         await asyncio.sleep(settings.check_interval_seconds)
         await checker.check_all()
@@ -23,10 +23,14 @@ async def periodic_health_check():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifecycle manager - uruchamia background task."""
+    """Lifecycle manager - starts background task."""
     task = asyncio.create_task(periodic_health_check())
     yield
     task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(
